@@ -2163,9 +2163,12 @@ EOF
     # Check the organization
     if [ -n "$ORGANIZATION" ] ; then
 
-        ORG=$($OPENSSL x509 -in "${CERT}" -subject -noout | sed -e "s/.*\\/O=//" -e "s/\\/.*//")
+        ORG=$($OPENSSL x509 -in "${CERT}" -subject -nameopt multiline -noout | 
+	      grep organizationName |
+              cut -s -d'=' -f2 |
+              sed -Ee 's/^\s*//' -e 's/\s*$//')
 
-        if ! echo "$ORG" | grep -q "^$ORGANIZATION" ; then
+        if ! echo "$ORG" | grep -q "^${ORGANIZATION}$" ; then
             critical "invalid organization ('$ORGANIZATION' does not match '$ORG')"
         fi
 
